@@ -1,6 +1,5 @@
-def main():
-    print("Hello from textual-serial!")
-
+from tui.TuiApp import TuiApp
 
 if __name__ == "__main__":
-    main()
+    app = TuiApp()
+    app.run()

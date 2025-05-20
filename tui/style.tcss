@@ -1,0 +1,4 @@
+TuiSerialView {
+    border: round;
+    border-title-align: left;
+}
