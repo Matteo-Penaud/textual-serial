@@ -6,13 +6,12 @@ from .TuiSerialView import TuiSerialView
 
 class TuiApp(App):
     CSS_PATH = "./style.tcss"
+    serial = None
 
     def compose(self):
         yield Footer()
 
-        self.serial_view = TuiSerialView()
         yield self.serial_view
 
-    def on_mount(self):
-        self.serial_view.border_title = "Serial_name"
-        self.serial_view.border_subtitle = "On /dev/tty/USBx"
+    def assign_serial(self, data_queue):
+        self.serial_view = TuiSerialView(data_queue)

@@ -1,3 +1,6 @@
+from contextlib import suppress
+from queue import Empty, SimpleQueue
+
 from textual import work
 from textual.widgets import TextArea
 
@@ -5,9 +8,16 @@ from textual.widgets import TextArea
 class TuiSerialView(TextArea):
     read_only = True
 
+    def __init__(self, data_queue: SimpleQueue = SimpleQueue()):
+        self.data_queue = data_queue
+
+        super().__init__()
+
     def on_mount(self) -> None:
+        self.border_title = "Serial"
         self.update_timer = self.set_interval(1 / 100, self.update_serial)
 
     @work(exclusive=True)
     async def update_serial(self) -> None:
-        self.insert("Test")
+        with suppress(Empty):
+            self.insert(self.data_queue.get_nowait())
