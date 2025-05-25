@@ -1,5 +1,4 @@
-from contextlib import suppress
-from queue import Empty, SimpleQueue
+from multiprocessing import SimpleQueue
 
 from textual import work
 from textual.widgets import TextArea
@@ -19,5 +18,5 @@ class TuiSerialView(TextArea):
 
     @work(exclusive=True)
     async def update_serial(self) -> None:
-        with suppress(Empty):
-            self.insert(self.data_queue.get_nowait())
+        if not self.data_queue.empty():
+            self.insert(self.data_queue.get())
