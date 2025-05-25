@@ -1,33 +1,35 @@
-from multiprocessing import Process, SimpleQueue
+from multiprocessing import Event, Process, SimpleQueue
 
 from serial import Serial
 
 from tui.TuiApp import TuiApp
 
 
-def serial_handler(serial: Serial, queue: SimpleQueue) -> None:
-    while True:
-        line = serial.read()
-        queue.put(line.decode("ascii"))
+class SerialHandler(Process):
+    queue = SimpleQueue()
+    _stop_event = Event()
 
-    serial.close()
-    queue.close()
+    def open_serial(self, port: str, baudrate: int):
+        self.serial: Serial = Serial(port=port, baudrate=baudrate)
 
+    def stop(self) -> None:
+        self.serial.cancel_read()
+        self.serial.close()
+        self.queue.close()
+        self._stop_event.set()
 
-def create_serial():
-    port_name = "/dev/ttyUSB1"
-    baudrate = 115_200
-    serial = Serial(port=port_name, baudrate=baudrate)
-    serial_queue = SimpleQueue()
-
-    return Process(target=serial_handler, args=(serial, serial_queue)), serial_queue
+    def run(self) -> None:
+        while not self._stop_event.is_set():
+            line = self.serial.read(1)
+            self.queue.put(line.decode("ascii"))
 
 
 if __name__ == "__main__":
-    serial_process, serial_queue = create_serial()
+    serial_process = SerialHandler()
+    serial_process.open_serial("/dev/ttyUSB1", 115_200)
     serial_process.start()
 
     app = TuiApp()
-    app.assign_serial(serial_queue)
+    app.assign_serial(serial_process.queue)
     app.run()
-    serial_process.kill()
+    serial_process.stop()
