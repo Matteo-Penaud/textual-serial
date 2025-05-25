@@ -8,7 +8,7 @@ from tui.TuiApp import TuiApp
 def serial_handler(serial: Serial, queue: SimpleQueue) -> None:
     while True:
         line = serial.read()
-        queue.put(line.decode("utf-8"))
+        queue.put(line.decode("ascii"))
 
     serial.close()
     queue.close()
@@ -30,3 +30,4 @@ if __name__ == "__main__":
     app = TuiApp()
     app.assign_serial(serial_queue)
     app.run()
+    serial_process.kill()
